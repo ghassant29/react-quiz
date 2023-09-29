@@ -3,6 +3,7 @@ import Header from "./Header";
 import Main from "./main";
 import Loader from "./Loader";
 import Error from "./Error";
+import StartScreen from "./StartScreen";
 const initialState = { questions: [], status: "loading" };
 function reducer(state, action) {
   switch (action.type) {
@@ -18,7 +19,8 @@ function reducer(state, action) {
   }
 }
 export default function App() {
-  const [{ question, status }, dispatch] = useReducer(initialState, reducer);
+  const [{ question, status }, dispatch] = useReducer(reducer, initialState);
+  const numQuestions = question.length;
 
   useEffect(function () {
     fetch("http://localhost:9000/questions")
@@ -32,6 +34,7 @@ export default function App() {
       <Main>
         {status === "loading" && <Loader />}
         {status === "error" && <Error />}
+        {status === "ready" && <StartScreen numQuestions={numQuestions} />}
       </Main>
     </div>
   );
