@@ -4,7 +4,14 @@ import Main from "./main";
 import Loader from "./Loader";
 import Error from "./Error";
 import StartScreen from "./StartScreen";
-const initialState = { questions: [], status: "loading" };
+import Question from "./Question";
+const initialState = {
+  question: [],
+  status: "loading",
+  index: 0,
+  answer: null,
+  points: 0,
+};
 function reducer(state, action) {
   switch (action.type) {
     case "dataReceived":
@@ -14,12 +21,27 @@ function reducer(state, action) {
         ...state,
         status: "error",
       };
+    case "start":
+      return { ...state, status: "active" };
+    case "newAnswer":
+      const qu = state.question.at(state.index);
+      return {
+        ...state,
+        answer: action.payload,
+        points:
+          action.payload === qu.correctOption
+            ? state.points + qu.points
+            : state.points,
+      };
     default:
       throw new Error("Action Unknown");
   }
 }
 export default function App() {
-  const [{ question, status }, dispatch] = useReducer(reducer, initialState);
+  const [{ question, status, index, answer }, dispatch] = useReducer(
+    reducer,
+    initialState
+  );
   const numQuestions = question.length;
 
   useEffect(function () {
@@ -34,7 +56,16 @@ export default function App() {
       <Main>
         {status === "loading" && <Loader />}
         {status === "error" && <Error />}
-        {status === "ready" && <StartScreen numQuestions={numQuestions} />}
+        {status === "ready" && (
+          <StartScreen dispatch={dispatch} numQuestions={numQuestions} />
+        )}
+        {status === "active" && (
+          <Question
+            question={question[index]}
+            dispatch={dispatch}
+            answer={answer}
+          />
+        )}
       </Main>
     </div>
   );
